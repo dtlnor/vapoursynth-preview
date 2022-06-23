@@ -168,7 +168,7 @@ class MiscToolbar(AbstractToolbar):
             'transfer'     : Output.Transfer.values[frame_props['_Transfer']],
             'width'        : self.main.current_output.width,
         }
-        substitutions = dict(frame_props)
+        substitutions = {k: v.decode("utf-8") if isinstance(v, bytes) else v for k,v in dict(frame_props).items()}
         substitutions.update(builtin_substitutions)
         try:
             suggested_path_str = template.format(**substitutions)
