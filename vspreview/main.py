@@ -350,6 +350,7 @@ class MainWindow(AbstractMainWindow):
     }
     # status bar
     STATUS_FRAME_PROP = lambda prop: 'Type: %s' % (prop['_PictType'].decode('utf-8') if '_PictType' in prop else '?')
+    STATUS_TEXT_FUNC_NAME = 'vsp_text'
 
     BENCHMARK_FRAME_DATA_SHARING_FIX  =  True
     DEBUG_PLAY_FPS                    = False
@@ -647,7 +648,15 @@ class MainWindow(AbstractMainWindow):
         if render_frame:
             self.current_output.graphics_scene_item.setImage(self.render_frame(frame))
 
-        self.statusbar.frame_props_label.setText(MainWindow.STATUS_FRAME_PROP(self.current_output.cur_frame[0].props))
+        text = ''
+        if MainWindow.STATUS_TEXT_FUNC_NAME in self.current_output.cur_frame[0].props:
+            frame = self.current_output.cur_frame[0]
+            func = frame.props[MainWindow.STATUS_TEXT_FUNC_NAME]
+            if callable(func):
+                text = func(f=frame)
+        if text == '':
+            text = MainWindow.STATUS_FRAME_PROP(self.current_output.cur_frame[0].props)
+        self.statusbar.frame_props_label.setText(text)
 
     def switch_output(self, value: Union[int, Output]) -> None:
         if len(self.outputs) == 0:
