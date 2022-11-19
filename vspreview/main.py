@@ -4,7 +4,7 @@ import logging
 import os
 from   pathlib  import Path
 import sys
-from   typing   import Any, cast, List, Mapping, Optional, Union
+from   typing   import Any, cast, List, Mapping, Optional, Union, Dict
 
 from   PyQt5       import Qt
 import vapoursynth as     vs
@@ -391,7 +391,7 @@ class MainWindow(AbstractMainWindow):
         self.setWindowTitle('VSPreview')
         self.move(400, 0)
         self.setup_ui()
-
+        self.script_globals: Dict[str, Any] = dict()
         # global
 
         self.clipboard    = self.app.clipboard()
@@ -510,11 +510,15 @@ class MainWindow(AbstractMainWindow):
             self.external_args = external_args
         argv_orig = sys.argv
         sys.argv = [script_path.name]
+        self.script_globals.clear()
+        self.script_globals = dict([('__file__', sys.argv[0])] + self.external_args)
 
+        ast_compiled = compile(
+            self.script_path.read_text(encoding='utf-8'), sys.argv[0], 'exec', optimize=2
+        )
         try:
             # pylint: disable=exec-used
-            exec(self.script_path.read_text(encoding='utf-8'),
-                dict([('__file__', sys.argv[0])] + self.external_args))
+            exec(ast_compiled, self.script_globals)
         except Exception as e:  # pylint: disable=broad-except
             self.script_exec_failed = True
             logging.error(e)
