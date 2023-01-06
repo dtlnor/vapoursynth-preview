@@ -659,6 +659,12 @@ class MainWindow(AbstractMainWindow):
             func = frame.props[MainWindow.STATUS_TEXT_FUNC_NAME]
             if callable(func):
                 text = func(f=frame)
+            elif isinstance(func, bytes):
+                text = func.decode('utf-8')
+            elif isinstance(func, str):
+                text = func
+            else:
+                text = repr(func)
         if text == '':
             text = MainWindow.STATUS_FRAME_PROP(self.current_output.cur_frame[0].props)
         self.statusbar.frame_props_label.setText(text)
