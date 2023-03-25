@@ -511,7 +511,12 @@ class MainWindow(AbstractMainWindow):
         argv_orig = sys.argv
         sys.argv = [script_path.name]
         self.script_globals.clear()
-        self.script_globals = dict([('__file__', sys.argv[0])] + self.external_args)
+        self.script_globals = dict([('__file__', sys.argv[0])])
+        for (k, v) in self.external_args:
+            if k in self.script_globals:
+                self.script_globals[k] = list(self.script_globals[k]) + [v]
+            else:
+                self.script_globals[k] = v
 
         ast_compiled = compile(
             self.script_path.read_text(encoding='utf-8'), sys.argv[0], 'exec', optimize=2
