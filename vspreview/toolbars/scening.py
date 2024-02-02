@@ -304,6 +304,7 @@ class SceningToolbar(AbstractToolbar):
             'x264/x265 QP File (*.qp *.txt)': self.import_qp,
             'XviD Log (*.txt)'              : self.import_xvid,
             'Simple Mappings (*.txt)'       : self.import_simple,
+            'Simple CSV (*.csv)'            : self.import_csv,
         }
 
         self.add_list_button               .clicked.connect(self.on_add_list_clicked)
@@ -698,6 +699,20 @@ class SceningToolbar(AbstractToolbar):
             try:
                 fnumbers = [int(n) for n in line.split()]
                 scening_list.add(Frame(fnumbers[0]), Frame(fnumbers[1]))
+            except ValueError:
+                out_of_range_count += 1
+
+    def import_csv(self, path: Path, scening_list: SceningList, out_of_range_count: int) -> None:
+        '''
+        Import simple frame mappings from csv [Start,End,Label]
+        '''
+        for line in path.read_text().splitlines():
+            try:
+                cells = [s for s in line.split(',')]
+                start = Frame(int(cells[0]))
+                end = Frame(int(cells[1])) if cells[1] else None
+                scening_list.add(start, end, ','.join(cells[2:]))
+
             except ValueError:
                 out_of_range_count += 1
 
