@@ -805,33 +805,30 @@ class SceningToolbar(AbstractToolbar):
         Imports Key=1 frames as single-frame scenes.
         Ignores everything besides Index=0 video stream.
         '''
-        from copy import deepcopy
 
         AV_CODEC_ID_FIRST_AUDIO = 0x10000
         STREAM_INDEX = 0
         IS_KEY = 1
 
-        pattern = re.compile(r'Index={}.*?Codec=(\d+).*?\n.*?Key=(\d)'.format(
+        lwi = path.read_text(errors='surrogateescape')
+
+        codec, time_num, time_den = re.search(r'Codec=(\d+),TimeBase=(\d+)/(\d+)', lwi).groups()
+        assert int(codec) < AV_CODEC_ID_FIRST_AUDIO, "Only video streams are supported"
+
+        pattern = re.compile(r'Index={}.*?PTS=(\d+).*?\n.*?Key=(\d),Pic=(\d)'.format(
             STREAM_INDEX
         ))
 
-        frame = Frame(0)
-        for match in pattern.finditer(path.read_text(),
-                                      re.RegexFlag.MULTILINE):
-            if int(match[1]) >= AV_CODEC_ID_FIRST_AUDIO:
-                frame += FrameInterval(1)
-                continue
-
+        for match in pattern.finditer(lwi,
+                                        re.RegexFlag.MULTILINE):
             if not int(match[2]) == IS_KEY:
-                frame += FrameInterval(1)
                 continue
 
-            try:
-                scening_list.add(deepcopy(frame))
-            except ValueError:
-                out_of_range_count += 1
-
-            frame += FrameInterval(1)
+            frame = Frame(Time(
+                milliseconds = int(match[1]) * int(time_num) / int(time_den)
+            ))
+            
+            scening_list.add(frame)
 
     def import_matroska_xml_chapters(self, path: Path, scening_list: SceningList, out_of_range_count: int) -> None:
         '''
