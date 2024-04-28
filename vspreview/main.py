@@ -518,8 +518,9 @@ class MainWindow(AbstractMainWindow):
             else:
                 self.script_globals[k] = v
 
+        # disable compilation for assertions
         ast_compiled = compile(
-            self.script_path.read_text(encoding='utf-8'), sys.argv[0], 'exec', optimize=2
+            self.script_path.read_text(encoding='utf-8'), sys.argv[0], 'exec', optimize=0
         )
         try:
             # pylint: disable=exec-used
