@@ -191,6 +191,8 @@ class MiscToolbar(AbstractToolbar):
                 self.main.toolbars.debug.toggle_button.click()
             self.main.toolbars.debug.toggle_button.setVisible(False)
 
+    @fire_and_forget    
+    @set_status_label(label='Saving')
     def save_as_png(self, path: Path) -> None:
         image = self.main.current_output.graphics_scene_item.image()
         image.save(str(path), 'PNG', self.main.PNG_COMPRESSION_LEVEL)
