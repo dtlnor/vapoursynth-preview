@@ -888,7 +888,7 @@ def main() -> None:
 
 
 def check_versions() -> bool:
-    from pkg_resources import get_distribution
+    from importlib.metadata import version
     from platform import python_version
 
     failed = False
@@ -898,9 +898,9 @@ def check_versions() -> bool:
                         .format(python_version(), sys.version_info.releaselevel))
         failed = True
 
-    if get_distribution('PyQt5').version < '5.15':
+    if version('PyQt5') < '5.15':
         logging.warning('VSPreview is not tested on PyQt5 versions prior to 5.15, but you have {}. Use at your own risk.'
-                        .format(get_distribution('PyQt5').version))
+                        .format(version('PyQt5')))
         failed = True
 
     if vs.core.version_number() < 53:
